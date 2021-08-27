@@ -8,7 +8,7 @@ export class ShoppingListService {
     new Ingredient('Apples', 3),
   ];
 
-  ingredientChanged = new EventEmitter<void>();
+  ingredientChanged = new EventEmitter<Ingredient[]>();
 
   getIngredients() {
     return this.ingredients.slice();
@@ -16,6 +16,21 @@ export class ShoppingListService {
 
   addIngredient(ingredient: Ingredient) {
     this.ingredients.push(ingredient);
-    this.ingredientChanged.emit();
+    this.ingredientChanged.emit(this.ingredients.slice());
+  }
+
+  addIngredients(ingredients: Ingredient[]) {
+    ingredients.forEach((newIngredient) => {
+      let isPresent = false;
+      this.ingredients.forEach((element) => {
+        if (newIngredient.name === element.name) {
+          element.amount += newIngredient.amount;
+          isPresent = true;
+        }
+      });
+      if (!isPresent) this.ingredients.push(newIngredient);
+    });
+
+    this.ingredientChanged.emit(this.ingredients.slice());
   }
 }
