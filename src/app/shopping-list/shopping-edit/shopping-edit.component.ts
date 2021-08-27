@@ -24,7 +24,8 @@ export class ShoppingEditComponent implements OnInit {
 
   ngOnInit(): void {}
 
-  onAddItem() {
+  onAddItem(event: MouseEvent) {
+    event.preventDefault();
     const name = this.nameInputRef.nativeElement.value;
     if (name.length === 0) return;
     this.ingredientAdded.emit(
