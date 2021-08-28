@@ -15,7 +15,7 @@ import { RecipeService } from '../Recipe.service';
   styleUrls: ['./recipe-detail.component.css'],
 })
 export class RecipeDetailComponent implements OnInit, OnChanges {
-  recipe!: Recipe;
+  recipe: Recipe | null | undefined;
 
   constructor(
     private slService: ShoppingListService,
@@ -37,6 +37,6 @@ export class RecipeDetailComponent implements OnInit, OnChanges {
   }
 
   sendToShoppingList() {
-    this.slService.addIngredients(this.recipe.ingredients);
+    if (this.recipe) this.slService.addIngredients(this.recipe.ingredients);
   }
 }
