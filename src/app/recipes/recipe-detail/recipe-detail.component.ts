@@ -16,6 +16,7 @@ import { RecipeService } from '../Recipe.service';
 })
 export class RecipeDetailComponent implements OnInit, OnChanges {
   recipe: Recipe | null | undefined;
+  id!: number;
 
   constructor(
     private slService: ShoppingListService,
@@ -28,9 +29,8 @@ export class RecipeDetailComponent implements OnInit, OnChanges {
 
   ngOnInit(): void {
     this.route.params.subscribe((params: Params) => {
-      const recipe = this.recipeService
-        .getRecipe()
-        .find((recipe, index) => index === +params.id);
+      this.id = +params['id'];
+      const recipe = this.recipeService.getRecipe(this.id);
       if (recipe) this.recipe = recipe!;
       else this.router.navigate(['../0'], { relativeTo: this.route });
     });
@@ -38,5 +38,10 @@ export class RecipeDetailComponent implements OnInit, OnChanges {
 
   sendToShoppingList() {
     if (this.recipe) this.slService.addIngredients(this.recipe.ingredients);
+  }
+
+  onDeleteRecipe() {
+    this.recipeService.deleteRecipe(this.id);
+    this.router.navigate(['..'], { relativeTo: this.route });
   }
 }
