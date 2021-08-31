@@ -1,4 +1,7 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { NgForm } from '@angular/forms';
+import { Subscription } from 'rxjs';
+
 import { Ingredient } from 'src/app/shared/ingredient.model';
 import { ShoppingListService } from '../shopping-list.service';
 
@@ -7,21 +10,52 @@ import { ShoppingListService } from '../shopping-list.service';
   templateUrl: './shopping-edit.component.html',
   styleUrls: ['./shopping-edit.component.css'],
 })
-export class ShoppingEditComponent implements OnInit {
-  @ViewChild('nameInput', { static: false })
-  nameInputRef!: ElementRef<HTMLInputElement>;
-  @ViewChild('amountInput', { static: false })
-  amountInputRef!: ElementRef<HTMLInputElement>;
+export class ShoppingEditComponent implements OnInit, OnDestroy {
+  @ViewChild('f', { static: false })
+  form!: NgForm;
+  editMode = false;
+  editableItem!: number;
+  startEdit!: Subscription;
 
   constructor(private slService: ShoppingListService) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.startEdit = this.slService.startEditing.subscribe((index) => {
+      this.editMode = true;
+      this.editableItem = index;
+      const item = this.slService.getIngredient(index);
+      this.form.form.setValue({
+        name: item.name,
+        amount: item.amount,
+      });
+    });
+  }
 
-  onAddItem() {
-    const name = this.nameInputRef.nativeElement;
-    const amount = this.amountInputRef.nativeElement;
-    if (name.value.length === 0) return;
-    this.slService.addIngredient(new Ingredient(name.value, +amount.value));
-    name.value = '';
+  onFormSubmit() {
+    console.log('submit');
+
+    const name = <string>this.form.value.name;
+    const amount = <string>this.form.value.amount;
+    const ingredient = new Ingredient(name, +amount);
+    if (this.editMode)
+      this.slService.updateIngredient(this.editableItem, ingredient);
+    else this.slService.addIngredient(ingredient);
+    this.onFormClear();
+  }
+
+  onFormClear() {
+    this.form.form.patchValue({ name: '', amount: 1 });
+    console.log('clear');
+
+    this.editMode = false;
+  }
+
+  onDelete() {
+    this.slService.deleteIngredient(this.editableItem);
+    this.onFormClear();
+  }
+
+  ngOnDestroy() {
+    this.startEdit.unsubscribe();
   }
 }
